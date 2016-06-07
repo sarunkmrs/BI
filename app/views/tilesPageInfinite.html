@@ -1,0 +1,76 @@
+<div class="panel ibox float-e-margins">
+    <div class="grey-head ibox-title">
+        <img src="images/iconMostViewedReport.png"/>
+        <h5 ng-bind="panel.title"></h5>
+        <div class="ibox-tools">
+            <a class="toggle-list-icons" ng-click="toggleListItems()">
+                <!-- <i class="fa fa-chevron-up"></i> -->
+                <img ng-hide="panel.listView" src="images/iconList.png"/>
+                <img ng-show="panel.listView" src="images/iconGrid.png"/>
+            </a>
+            <a class="collapse-link" ng-click="collapseOpen()">
+                <!-- <i class="fa fa-chevron-up"></i> -->
+                <img ng-hide="panel.open" src="images/collapseIcon.png"/>
+                <img ng-show="panel.open" src="images/expandedIcon.png"/>
+            </a>
+        </div>
+    </div>
+    <div ng-show="panel.open" class="ibox-content no-padding">
+        <div class="container-fluid"
+             infinite-scroll='panel.service.loadReports(panel.parameter1,panel.parameter2)' 
+             infinite-scroll-distance='1' 
+             infinite-scroll-disabled='panel.service.loadmoredisable' 
+             infinite-scroll-immediate-check='true'
+             ng-class="{'tiles-list-view':panel.listView}"
+             >
+            <div class="row" >
+                <div ng-class="panel.class_names" ng-repeat="report in (mostviewed = (panel.service.reports| limitTo:panel.limit))">
+                    <a ng-href="BITool/admin/externalrepo/downloadreport/{{report.sourceReportId}}" title="{{report.reportDesc}}" ng-show="externalUrl">
+                        <div class="panel panel-primary reports-box">
+                            <load-tile-image></load-tile-image>
+                            <div class="panel-footer">
+                                <span class="pull-left wrap-reportname">{{report.name}} </span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </a>
+                    <a ng-href="#/reports/{{report.levelId}}/{{report.id}}/report"  title="{{report.reportDesc}}" ng-hide="externalUrl">
+                        <div class="panel panel-primary reports-box" ng-class="{'refresh-status-icon-green-bottom': report.refreshStatus === 'Y' }">
+                            <load-tile-image></load-tile-image>
+
+                            <div class="panel-footer">
+                                <span class="pull-left wrap-reportname">{{report.name}} </span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="footer-links">
+                        <div class="open-exteranl" title="Open in new window/tab" >
+                            <a ng-show="report.type.toLowerCase() === 'tableau'" href="{{report.reportLink}}?:embed=y&:showVizHome=n&:apiID=handler0" target="_blank"><img src="images/resources-icon-link.jpg"></a>
+                            <a ng-show="report.type.toLowerCase() !== 'tableau'" href="{{report.reportLink}}" target="_blank"><img src="images/resources-icon-link.jpg"></a>
+                        </div>
+                        <div class="favorite-button" ng-click="changeFavorite(report)" ng-class="{'favorite-selected': report.favorite === 'Y' }" title="Make this Report favorite" ></div>
+                    </div> 
+                    <!--<div class="favorite-button" ng-click="changeFavorite(report)" ng-class="{'favorite-selected': report.favorite ==='Y' }" >-->
+
+                </div>
+                <div class="refresh-status-icon" ng-class="{'refresh-status-icon-green': report.refreshStatus === 'Y' }" >
+
+                </div>
+            </div>
+            <p ng-show="panel.pesonaError" class="text-center persona-error">
+                <span ng-show="panel.pesonaError">
+                    {{panel.pesonaError}}.
+                </span>
+            </p>
+            <p ng-show="panel.service.reports.length === 0" class="text-center">
+                <span ng-show="panel.rr">
+                    There are no available reports for this persona.
+                </span>
+            </p>
+        </div>
+        <div class="row pull-right view-more" ng-show="panel.levelLink">
+            <a ui-sref="reports.details({levelId:panel.levelLink})">View More</a>
+        </div>
+    </div>
+</div>

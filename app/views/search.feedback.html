@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="col-md-8 col-md-offset-2">
+
+        <div class="input-group">
+            <textarea ng-model="feedback" class="form-control custom-control" rows="3" style="resize:none;" placeholder="Please write a feedback here"></textarea>
+            <span class="input-group-addon btn btn-primary" ng-click="postFeedback()">
+                Post
+            </span>
+        </div>
+
+    </div>
+</div>
+<h3>Feedbacks</h3>
+<div class="row feedback-row" ng-repeat="feedback in feedbackArray">
+    <div class="col-md-12">
+        {{feedback.feedback}}
+    </div>
+    <div class="col-md-6 small text-muted">
+        By: {{feedback.userName}}
+    </div>
+    <div class="col-md-6 small text-muted">
+        Posted: {{feedback.feedbackDate | date:'MMM d yyyy'}}
+    </div>
+    
+</div>

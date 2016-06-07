@@ -1,0 +1,385 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8">
+    <title>EMC Insights</title>
+    <base href="/">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css(.) styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/nvd3/src/nv.d3.css" />
+    <link rel="stylesheet" href="bower_components/angular-ui-grid/ui-grid.css" />
+    <link rel="stylesheet" href="bower_components/jqcloud2/dist/jqcloud.css" />
+    <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css(.tmp) styles/main.css -->
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- endbuild -->
+    <style>
+        #grayblackground {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            height:100%;
+            width:100%;
+            cursor: not-allowed;
+            filter: alpha(opacity=60);
+            opacity: 0.6;
+            background-color: #000000;
+            z-index: 9999;
+        }
+        #loadingIcon {
+            position: absolute;
+            top:200px;
+            width:100%;
+            text-align: center;
+            font-size: 4em;
+            color:white;
+            text-shadow: 2px 2px 2px #021124;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body ng-app="myBiApp" ng-controller="ParentCtrl" ng-class="{'mini-navbar':toggleLeft}">
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <!-- Add your site or application content here -->
+    <header id="header">
+        <div class="container">
+            <div class="row visible-md visible-lg visible-sm hidden-xs">
+                <div class="col-md-4 col-lg-4 col-sm-4">  
+                    <a class="navbar-brand" href="#/">
+                        <!--span class="emc-logo">x</span -->
+                        <span class="portal-name">EMC<sup>2</sup> Insights</span>
+                    </a>
+                </div>
+                <div class="col-md-4 col-lg-4 col-sm-4">
+                    <div id="imaginary_container">
+                        <form ng-submit="submitSearch()" style="position: relative">
+                            <div>
+                                <div class="input-group search-parent" >
+                                    <input ng-model="searchText"
+                                           type="text"
+                                           class="form-control globle-search-input"
+                                           placeholder="Search..."
+                                           uib-typeahead="searchText for searchText in getSearchSuggest($viewValue)"
+                                           typeahead-loading="loadingLocations"
+                                           typeahead-no-results="noResults"
+                                           typeahead-focus-first="false"
+                                           typeahead-show-hint="true"
+                                           typeahead-append-to = "searchParent"
+                                           typeahead-on-select="searchOnSelect($item, $model, $label, $event)"
+                                           typeahead-popup-template-url="views/customPopupTemplate.html"
+                                           autocomplete="off" />
+                                    <span class="input-group-addon globle-chevron-icon" >
+                                        <button type="button" ng-click="chevron = !chevron">
+                                            <span class="glyphicon chevron-class"  ng-class="(chevron)? 'glyphicon-chevron-up':'glyphicon-chevron-down'"></span>
+                                        </button>  
+                                    </span>
+                                    <span class="input-group-addon globle-search-icon">
+                                        <button type="submit">
+                                            <span class="glyphicon glyphicon-search"></span>
+                                        </button>  
+                                    </span>
+                                    
+                                </div>
+                                <div style="position: absolute; top:38px; left:0; width: 100%;">
+                                    <div class="searchin-container" ng-show="chevron" ng-cloak>
+                                        <span class="message-label">Search in</span>
+                                        <span class="radio-persona">
+                                            <label>
+                                                <input type="radio" name="searchin" value="persona" ng-model="searchin"> Persona
+                                            </label>
+                                        </span>
+                                        <span class="radio-catalog">
+                                            <label>
+                                                <input type="radio" name="searchin" value="catlog" ng-model="searchin"> Report Catalog
+                                            </label>
+                                        </span>
+                                    </div>
+                                    <div id="search-parent"></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-lg-4 col-sm-4">
+                    <span class="header-right pull-right" ng-show="userObject.userFullName!=''">
+                        <!--  userObject.userinfo.role.toLowerCase() === 'admin' || userObject.userinfo.role.toLowerCase() === 'buadmin' -->
+                        <a ng-show="userObject.userinfo.role.toLowerCase() === 'admin' || userObject.userinfo.role.toLowerCase() === 'buadmin'" data-toggle="dropdown" class="dropdown-toggle" href="javascript:void(0)">
+                            <div class="top-header-title">
+                                <span>
+                                    <img alt="image" class="usr-image" ng-src="{{userPicUrl}}" err-src="images/charts/default_user.png">
+                                </span>
+                                <span ng-bind="userObject.userFullName"></span>
+                            </div>
+                            <div class="top-header-caret">
+                                <b class="caret"></b>
+                            </div>
+                        </a>
+                        <!-- userObject.userinfo.role.toLowerCase() !== 'admin' && userObject.userinfo.role.toLowerCase() !== 'buadmin' -->
+                        <a ng-show="userObject.userinfo.role.toLowerCase() !== 'admin' || userObject.userinfo.role.toLowerCase() === 'buadmin'" ui-sref="profile"> 
+                            <span>
+                                <img alt="image" class="usr-image" ng-src="{{userPicUrl}}" err-src="images/charts/default_user.png">
+                            </span>
+                            <span ng-bind="userObject.userFullName"></span>
+                        </a>
+                            
+                        <ul class="dropdown-menu animated fadeInRight profile-dropdown-menu">
+                            <li class="divider"></li -->
+                            <li><a ui-sref="profile">Profile</a></li>
+                            <li class="divider"></li>
+                            <li><a href="admin">Admin</a></li>
+                        </ul>
+                    </span> 
+                </div>   
+            </div>
+            <div class="row hidden-md hidden-lg hidden-sm visible-xs">
+                <div class="col-xs-10 margin-padding-zero ">
+                    <a class="navbar-brand" href="#/"><img class="logo" src="images/EMCLogo.png" alt="logo"></a> 
+                    <div class="portal-name">Insights 
+                        <span ng-show="showPage" class="xs-report-header"> | Reports
+                            <button ng-click="showIcons()" class="reports-type button-icon glyphicon glyphicon-th-large"></button>
+                            <button ng-click="hideIcons()" class="button-icon glyphicon glyphicon-th-list"></button>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-xs-2 text-right">
+                    <ul class="nav">
+                        <li class="nav-header" ng-show="userObject.userFullName!=''" aria-hidden="false">
+                            <div class="dropdown text-center profile-element" title="{{userObject.userFullName}}"> 
+                                <a data-toggle="dropdown" class="dropdown-toggle user-icon-nav-header" href="javascript:void(0)" aria-expanded="false">
+                                   <span><img alt="image" class="img-circle profile-small" ng-src="{{userPicUrl}}" err-src="images/charts/default_user.png"></span>
+                                </a>
+                            </div>
+                            <div class="logo-element">
+                                Insights
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row hidden-md hidden-lg hidden-sm visible-xs">
+                <div class="col-xs-12 glb-search-mob">
+                    <input class="form-control globle-search-input" type="text" name="mob-search" placeholder="Search...">
+                </div>
+            </div>
+        </div><!--/.container-->
+    </header>
+
+    <!--<div class="container"> -->
+     
+    <div class="pace-done">
+        <!-- Wrapper -->
+        <div id="wrapper">
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                <div class="navbar-minimalize" ng-click="toggleLeft = !toggleLeft" ></div>
+                <div class="sidebar-collapse">
+                    <ul class="nav metismenu" id="side-menu" style="display: block;">
+                        <li class="nav-header" ng-show="userObject.userFullName!=''">
+                            <div class="dropdown text-center profile-element" title="{{userObject.userFullName}}" > 
+                                <!-- a data-toggle="dropdown" class="dropdown-toggle bg-transparent" href="javascript:void(0)" -->
+                                <a ui-sref="profile">
+                                    <span>
+                                        <img alt="image" class="img-circle" ng-src="{{userPicUrl}}" err-src="images/charts/default_user.png">
+                                    </span>
+                                    <span class="clear">
+                                        <span class="block m-t-xs">
+                                            <strong class="font-bold">{{userObject.userFullName}}</strong>
+                                            <span class="badge-icon" ng-class="{'silver' : userObject.userinfo.badge==='Silver', 'gold':userObject.userinfo.badge==='Gold', 'platinum':userObject.userinfo.badge==='Platinum'}"></span>
+                                        </span>
+                                        <span class="text-muted text-xs block">{{userObject.title}}</b></span>
+                                        <!--span class="text-muted text-xs block">{{userObject.userinfo.badge}}</span -->
+                                    </span>
+                                </a>
+                            </div>
+                            <div class="logo-element">
+                                Insights
+                            </div>
+                        </li>
+                        <li ui-sref-active="active">
+                            <a ui-sref="home"><img src="images/homeIcon.png"/> <span class="nav-label">Home</span> </a>
+                        </li>
+                        <li ui-sref-active="active">
+                            <a ui-sref="reportsDashboard"> <img src="images/reportDashboardIcon_leftNavigation.png"/><span class="nav-label">Operational Dashboard</span></a>
+                        </li>
+                        <li ng-class="{'active': mainState.includes('reports')}">
+                            <a ui-sref="reports.list">
+                                <img src="images/iconReports.png"/><span class="nav-label">Available Reports</span>
+                            </a>
+                            
+                            <div
+                                data-angular-treeview="true"
+                                data-tree-model="biGroup.biGroups"
+                                data-node-id="levelId"
+                                data-node-label="levelDesc"
+                                data-node-children="children" >
+                            </div>
+                        </li>
+                        <li ui-sref-active="active">
+                            <a ui-sref="favorites"> <img src="images/iconFavorites.png"/><span class="nav-label">My Favorites</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div id="page-wrapper" class="white-bg dashbard-1" >
+                <div class="row border-bottom gray-bg">
+                    <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                        <div class="navbar-header">
+                            <!-- a class="navbar-minimalize minimalize-styl-2 btn" href="#/"><img class="expand-collapse" src="images/expandCollapseHandle.png"/> </a -->
+                            <ul class="main-content-header"><!-- ng-style="{'background-image': 'url('+mainState.$current.data.bgIcon+ ')'}" -->
+                                <li ng-class="mainState.$current.data.classIcon" >
+                                    <h2 ng-bind="mainState.$current.data.displayName"></h2>
+                                    <span ng-bind="mainState.$current.data.subCaption" ng-show="mainState.current.name.indexOf('search.details') === -1 && mainState.current.name.indexOf('reports.details.report') === -1"></span>
+                                    <span ng-show="mainState.current.name.indexOf('search.details') === 0">
+                                        <ul class="subHeaderMenu" ng-cloak>
+                                            <li ui-sref-active="active"><a ui-sref="search.details.report({'searchId':searchId})">Report</a></li>
+                                            <li ui-sref-active="active"><a ui-sref="search.details.about({'searchId':searchId})">About this Report</a></li>
+                                            <li ui-sref-active="active"><a ui-sref="search.details.access({'searchId':searchId})">How to Request Access</a></li>
+                                            <li ng-hide="$stateParams.persona === 'N'" ui-sref-active="active"><a ui-sref="search.details.feedback({'searchId':searchId})">User Feedback</a></li>
+                                        </ul>
+                                    </span>
+                                    <span ng-show="mainState.current.name.indexOf('reports.details.report') === 0">
+                                        <ul class="subHeaderMenu" ng-cloak>
+                                            <li ui-sref-active="active"><a ui-sref="reports.details.report.report({'levelId':$stateParams.levelId,'reportId':$stateParams.reportId})">Report</a></li>
+                                            <li ui-sref-active="active"><a ui-sref="reports.details.report.about({'levelId':$stateParams.levelId,'reportId':$stateParams.reportId})">About this Report</a></li>
+                                            <li ui-sref-active="active"><a ui-sref="reports.details.report.access({'levelId':$stateParams.levelId,'reportId':$stateParams.reportId})">How to Request Access</a></li>
+                                            <li ui-sref-active="active"><a ui-sref="reports.details.report.feedback({'levelId':$stateParams.levelId,'reportId':$stateParams.reportId})">User Feedback</a></li>
+                                        </ul>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="navbar-header-right">
+                            <div class="breadcrum">
+                                <!--span class="youarehere">YOU ARE HERE : </span>
+                                <div ncy-breadcrumb></div-->
+                            </div>
+                        </div>  
+                    </nav>
+                </div>
+                <!-- main content -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="wrapper wrapper-content" ui-view>
+                            
+                        </div>
+                        <div class="footer">
+                            <div class="pull-right visible-md visible-lg hidden-sm hidden-xs">
+                                <a ui-sref="faq">FAQ</a> | <a target="_blank" href="/doc/Insights%20User%20Documentation.pdf">Help</a> | <a href="mailto:insights.portal.help@emc.com">Contact</a>
+                            </div>
+                            <div class="pull-left">
+                                <!-- strong>Copyright 2015</strong> - All rights reserved. -->
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                <!-- end main content -->
+            </div>
+        </div>
+        <!-- end of Wrapper -->
+    </div>
+    <!-- end of pac-done -->
+
+    <!-- Here's some values to keep an eye on in the sample in order to understand $state and $stateParams -->
+
+    <!--pre>
+        $state = {{$state.current.name}}
+        $stateParams = {{$stateParams}}
+        $state full url = {{ $state.$current.url.source }}
+        {{isLoading}}
+    </pre -->
+    <!-- $state.$current is not a public api, we are using it to
+        display the full url for learning purposes-->
+
+    <div id="grayblackground" ng-show="isLoading"></div>
+    <div id="loadingIcon" ng-show="isLoading">
+        <div id="circularG">
+        	<div id="circularG_1" class="circularG"></div>
+        	<div id="circularG_2" class="circularG"></div>
+        	<div id="circularG_3" class="circularG"></div>
+        	<div id="circularG_4" class="circularG"></div>
+        	<div id="circularG_5" class="circularG"></div>
+        	<div id="circularG_6" class="circularG"></div>
+        	<div id="circularG_7" class="circularG"></div>
+        	<div id="circularG_8" class="circularG"></div>
+        </div>
+    </div>
+    <!-- </div> -->
+
+    <!-- build:js(.) scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.js"></script>
+    <script src="bower_components/angular-cookies/angular-cookies.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="bower_components/angular-touch/angular-touch.js"></script>
+    <script src="bower_components/angular-mocks/angular-mocks.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/nvd3/nv.d3.js"></script>
+    <script src="bower_components/angular-nvd3/dist/angular-nvd3.min.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/underscore/underscore.js"></script>
+    <script src="bower_components/angular-underscore-module/angular-underscore-module.js"></script>
+    <script src="bower_components/angular-ui-grid/ui-grid.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js"></script>
+    <script src="bower_components/jqcloud2/dist/jqcloud.js"></script>
+    <script src="bower_components/angular-jqcloud/angular-jqcloud.js"></script>
+    <script src="bower_components/angular-breadcrumb/release/angular-breadcrumb.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:js({.tmp,app}) scripts/scripts.js -->
+    <script src="scripts/app.js"></script>
+    <script src="scripts/app-run.js"></script>
+    <script src="scripts/controllers/main.js"></script>
+    
+    <script src="scripts/controllers/report.js"></script>
+    <script src="scripts/controllers/reports.js"></script> 
+    <script src="scripts/controllers/parent.js"></script>
+    <script src="scripts/controllers/reportslib.js"></script>
+    
+    <script src="scripts/controllers/reportsdashboard.js"></script>
+    <script src="scripts/controllers/favorites.js"></script>
+    <!-- <script src="scripts/controllers/prompts.js"></script> -->
+    <script src="scripts/services/reportsmenu.js"></script>
+    <script src="scripts/services/newsservice.js"></script>
+    <script src="scripts/services/reportsummaryservice.js"></script>
+    <script src="scripts/services/carouselservice.js"></script>
+    <script src="scripts/services/profileservice.js"></script>
+    <script src="scripts/services/popularsearchservice.js"></script>
+    <script src="scripts/services/webserviceurl.js"></script>
+    <script src="scripts/services/commonservice.js"></script>
+    <script src="scripts/services/userdetailsservice.js"></script>
+    <script src="scripts/controllers/profile.js"></script>
+    <script src="scripts/module/treeview.js"></script>
+    <script src="scripts/services/useralertservice.js"></script>
+    <script src="scripts/directives/loadtiles.js"></script>
+    <script src="scripts/services/reportsfactory.js"></script>
+    <script src="scripts/controllers/search.js"></script>
+    <script src="scripts/controllers/searchdetails.js"></script>
+    <script src="scripts/services/searchservice.js"></script>
+    <!-- <script src="scripts/module/tableau-2.0.0.min.js"></script> -->
+    <!-- endbuild -->
+        
+    <!-- Mainly scripts>
+    <script src="scripts/js/jquery.metisMenu.js"></script> 
+    <script src="scripts/js/jquery.slimscroll.min.js"></script>
+    <script src="scripts/js/mybi-custom.js"></script -->
+    <!--<script src="https://baaastableau.corp.emc.com/javascripts/api/tableau-2.0.0.min.js"></script>-->
+</body>
+</html>

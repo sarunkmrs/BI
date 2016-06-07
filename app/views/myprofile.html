@@ -1,0 +1,91 @@
+<div class="myprofile">
+    <h3><b>My account</b></h3>
+</div>
+<br>
+
+<div style="">
+    <div style="height: 150px; width: 150px; position:absolute; background-color:grey ">
+        <img style="height: 150px; width: 150px;" alt="image" ng-src="{{userPicUrl}}" err-src="images/charts/default_user.png">
+    </div>
+    <div style="margin-left: 180px;" class="row">
+        <div style="" class="col-md-6">
+            
+                <div class="row" style="padding-bottom: 40px;">
+                    <span> Name:</span>
+                    {{userObject.userFullName}}
+                    
+                </div>
+                
+            
+        </div>
+    
+        <div class="col-md-6" >
+            
+                <div class="row" style="padding-bottom: 40px;">
+                     <span> Badge: </span>
+                     {{userObject.uid}}
+                </div>
+                
+             
+        </div>
+        
+    </div>
+    <div style="margin-left: 180px;" class="row">
+        <div style="" class="col-md-6">
+            
+                <div class="row" style="padding-bottom: 40px;">
+                    <span> Email Address:</span>
+                    {{userObject.mail}}
+                </div>
+                
+            
+        </div>
+    
+        <div class="col-md-6" >
+            
+                <div class="row" style="padding-bottom: 40px;">
+                     <span> Designation: </span>
+                     {{userObject.title}}
+                </div>
+                
+             
+        </div>
+        
+    </div>
+    
+    <div style="margin-left: 180px;" class="row">
+        <div style="" class="col-md-6">
+            
+                <div class="row" style="padding-bottom: 40px;">
+                    <span> Phone Number:</span>
+                    {{userObject.telephonenumber}}
+                    
+                </div>
+                
+            
+        </div>
+    
+        <div class="col-md-6" >
+            
+                <div class="row" style="padding-bottom: 40px;">
+                     <span> Role: </span>
+                     {{userObject.userinfo.role}}
+                </div>
+                
+             
+        </div>
+        
+    </div>
+
+</div>
+
+<hr>
+
+<div class="myprofile">
+    <h3><b>Persona</b></h3>
+</div>
+<div class="myprofile">
+    <ul>
+        <li ng-repeat="groups in userObject.userinfo.group">{{groups.groupName}}</li>
+    </ul>
+</div>
