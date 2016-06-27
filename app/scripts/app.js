@@ -34,7 +34,7 @@ angular
     tableauImagesPath: 'PreviewImages/',
     API: {
         //Set useMocks to true to simulate/mock actual webservice.
-        useMocks: false,
+        useMocks: true,
         fakeDelay: 800,
         //baseUrl: 'http://bipdurdev01.corp.emc.com/',
         baseUrl: '/'

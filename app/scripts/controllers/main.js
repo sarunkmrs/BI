@@ -87,7 +87,6 @@ angular.module('myBiApp')
             $scope.myLevel.step3 = 'complete';
             $scope.myLevel.step4 = 'active';
         }
-
     });
 
     $scope.showMyIndication = false;
